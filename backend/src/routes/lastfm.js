@@ -1,7 +1,18 @@
 import { Router } from "express"
-import { getArtistTopTracks, getTracksByGenre } from "../services/lastfm.service.js"
+import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks } from "../services/lastfm.service.js"
 
 const router = Router();
+
+router.get("/top-tracks", async (req, res) => {
+    try {
+        const tracksData = await getTopGlobalTracks()
+        return res.json(tracksData)
+    } catch (err){
+        console.log(err);
+        res.status(500).json({error: "Failed to fetch top global tracks"})
+    }
+
+})
 
 router.get("/genre/:tag/tracks", async (req, res) => {
     const tag = decodeURIComponent(req.params.tag)
