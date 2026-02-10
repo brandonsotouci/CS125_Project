@@ -1,4 +1,7 @@
-const API_BASE_URL = "http://localhost:3000/api/lastfm"
+const BACKEND_IP = process.env.EXPO_PUBLIC_COMPUTER_IP;
+const BACKEND_PORT = process.env.EXPO_PUBLIC_BACKEND_PORT;
+
+const API_BASE_URL = `http://${BACKEND_IP}:${BACKEND_PORT}/api/lastfm`
 
 export async function getTopTracksByGenre(
     genre: string,
