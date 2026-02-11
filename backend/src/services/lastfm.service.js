@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
-
+import { calculateTrackRankingScore } from "../utils/rankingTrackScore.js";
+import { getTrackRegions } from "../utils/geoPresenceCounts.js";
 dotenv.config();
 
 const baseURL = "https://ws.audioscrobbler.com/2.0/"
@@ -29,7 +30,21 @@ export async function getTopGlobalTracks(){
             })
 
             const trackInfo = metadata.data.track;
-            console.log(trackInfo)            
+            const rankingScore = calculateTrackRankingScore({
+                playcount: parseInt(trackInfo.playcount) || 0,
+                listeners: parseInt(trackInfo.listeners) || 0,
+                rank: track['@attr']?.rank ? parseInt(track['@attr'].rank) : 0,
+                rankChange: 0, //for now,
+                chartPresenceCount: 1 //for now
+            })
+
+            const regions = await getTrackRegions(
+                track.name,
+                track.artist.name
+            )
+
+            //console.log(geoScore)
+
             return {
                 artist: track.artist.name,
                 listeners: trackInfo.listeners,
@@ -38,11 +53,13 @@ export async function getTopGlobalTracks(){
                 track: track.name,
                 album: trackInfo.album?.title ?? null,
                 genres: trackInfo.toptags?.tag?.map((genre) => genre.name) ?? [],
-                releaseDate: trackInfo.wiki?.published ?? null
+                releaseDate: trackInfo.wiki?.published ?? null,
+                rankingScore: rankingScore,
+                regions: regions
             }
         })
     )
-    console.log(enrichedData)
+    //console.log(enrichedData)
 
     return enrichedData;
 }
