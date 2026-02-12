@@ -1,21 +1,24 @@
-import express from "express"
-import cors from "cors"
-import dotenv from "dotenv"
-
-import lastfmRoutes from "./routes/lastfm.js"
-import router from "./routes/lastfm.js";
+import express from "express";
+import cors from "cors";
+import lastfmRouter from "./routes/lastfm.js";
 
 const app = express();
 
-app.use(cors({
-    origin: "*"
-}))
-
+app.use(cors());
 app.use(express.json());
-app.use("/api/lastfm", lastfmRoutes);
+
+app.get("/health", (req, res) => res.json({ ok: true }));
+
+app.use("/api/lastfm", lastfmRouter);
 
 app.use((err, req, res, next) => {
-    res.status(500).json({ error: err.message })
-})
+  console.error(err);
+  const status = err?.response?.status || 500;
+  const message =
+    err?.response?.data?.message ||
+    err?.message ||
+    "Internal Server Error";
+  res.status(status).json({ error: message });
+});
 
 export default app;
