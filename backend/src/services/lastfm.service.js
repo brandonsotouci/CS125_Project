@@ -1,72 +1,99 @@
 import axios from "axios";
+import dotenv from "dotenv";
+import { calculateTrackRankingScore } from "../utils/rankingTrackScore.js";
+import { getTrackRegions } from "../utils/geoPresenceCounts.js";
+dotenv.config();
 
-const LASTFM_BASE_URL = "https://ws.audioscrobbler.com/2.0/";
+const baseURL = "https://ws.audioscrobbler.com/2.0/"
+const API_KEY = process.env.LASTFM_API_KEY;
 
-function requireApiKey() {
-  const key = process.env.LASTFM_API_KEY;
-  if (!key) throw new Error("Missing LASTFM_API_KEY in backend/.env");
-  return key;
+export async function getTopGlobalTracks(){
+    const response = await axios.get(baseURL, {
+        params: {
+            method: "chart.gettoptracks",
+            api_key: API_KEY,
+            format: "json",
+        }
+    })
+
+    const topTracksData = response.data.tracks.track
+    const enrichedData = await Promise.all(
+        topTracksData.map(async (track) => {
+            const metadata = await axios.get(baseURL, {
+                params: {
+                    method: "track.getInfo",
+                    artist: encodeURIComponent(track.artist.name),
+                    track: encodeURIComponent(track.name),
+                    api_key: API_KEY,
+                    format: "json"
+                }
+            })
+
+            const trackInfo = metadata.data.track;
+            const rankingScore = calculateTrackRankingScore({
+                playcount: parseInt(trackInfo.playcount) || 0,
+                listeners: parseInt(trackInfo.listeners) || 0,
+                rank: track['@attr']?.rank ? parseInt(track['@attr'].rank) : 0,
+                rankChange: 0, //for now,
+                chartPresenceCount: 1 //for now
+            })
+
+            const regions = await getTrackRegions(
+                track.name,
+                track.artist.name
+            )
+
+            //console.log(geoScore)
+
+            return {
+                artist: track.artist.name,
+                listeners: trackInfo.listeners,
+                duration: track.duration,
+                playcount: track.playcount ?? null,
+                track: track.name,
+                album: trackInfo.album?.title ?? null,
+                genres: trackInfo.toptags?.tag?.map((genre) => genre.name) ?? [],
+                releaseDate: trackInfo.wiki?.published ?? null,
+                rankingScore: rankingScore,
+                regions: regions
+            }
+        })
+    )
+    //console.log(enrichedData)
+
+    return enrichedData;
 }
 
-function pickBestImage(images) {
-  if (!Array.isArray(images) || images.length === 0) return undefined;
-  const preferred = ["extralarge", "large", "medium", "small"];
-  for (const size of preferred) {
-    const found = images.find((i) => i?.size === size && i?.["#text"]);
-    if (found?.["#text"]) return found["#text"];
-  }
-  return images[images.length - 1]?.["#text"] || undefined;
+export async function getTracksByGenre(tag){
+    if(!tag){
+        console.log("TAG MISSING?");
+        throw new Error("Genre tag paramater is required!")
+    }
+
+    const response = await axios.get(baseURL, {
+        params: {
+            method: "tag.gettoptracks",
+            tag,
+            api_key: API_KEY,
+            format: "json",
+            limit: 50,
+        }
+    })
+
+
+    return response.data.tracks.track;
 }
 
-function toNum(x) {
-  const n = Number(x);
-  return Number.isFinite(n) ? n : undefined;
-}
+export async function getArtistTopTracks(artist){
+    const response = await axios.get(baseURL, {
+        params: {
+            method: "artist.gettoptracks",
+            artist: artist,
+            api_key: API_KEY,
+            format: "json",
+            limit: 10
+        }
+    });
 
-function normalizeTrack(t) {
-  const artist =
-    typeof t?.artist === "string"
-      ? t.artist
-      : t?.artist?.name ?? t?.artist?.["#text"] ?? "Unknown";
-
-  return {
-    name: String(t?.name ?? ""),
-    artist: String(artist),
-    url: t?.url ? String(t.url) : undefined,
-    imageUrl: pickBestImage(t?.image),
-    playcount: toNum(t?.playcount),
-    listeners: toNum(t?.listeners),
-  };
-}
-
-async function callLastFm(method, params) {
-  const api_key = requireApiKey();
-  const res = await axios.get(LASTFM_BASE_URL, {
-    timeout: 12000,
-    params: {
-      method,
-      api_key,
-      format: "json",
-      ...params,
-    },
-  });
-  return res.data;
-}
-
-export async function getChartTopTracks({ limit = 20, page = 1 }) {
-  const data = await callLastFm("chart.gettoptracks", { limit, page });
-  const tracks = data?.tracks?.track ?? [];
-  return tracks.map(normalizeTrack);
-}
-
-export async function getTopTracksByTag({ tag, limit = 20, page = 1 }) {
-  const data = await callLastFm("tag.gettoptracks", { tag, limit, page });
-  const tracks = data?.tracks?.track ?? [];
-  return tracks.map(normalizeTrack);
-}
-
-export async function getTopTracksByArtist({ artist, limit = 20, page = 1 }) {
-  const data = await callLastFm("artist.gettoptracks", { artist, limit, page });
-  const tracks = data?.toptracks?.track ?? [];
-  return tracks.map(normalizeTrack);
+    return response.data.toptracks.track;
 }
