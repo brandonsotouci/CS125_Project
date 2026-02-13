@@ -70,7 +70,7 @@ export async function fetchTopTracksByArtist(
   const page = opts?.page ?? 1;
   const limit = opts?.limit ?? 20;
 
-  const url = `${API}/artist/${encodeURIComponent(artist)}/top-tracks?page=${page}&limit=${limit}`;
+  const url = `${API}/artist/${encodeURIComponent(artist)}/tracks?page=${page}&limit=${limit}`;
   const data = await getJSON<any>(url);
   return normalizePaged(data, { page, limit }, { artistQuery: artist });
 }
@@ -81,7 +81,7 @@ export async function fetchChartTopTracks(
   const page = opts?.page ?? 1;
   const limit = opts?.limit ?? 20;
 
-  const url = `${API}/chart/top-tracks?page=${page}&limit=${limit}`;
+  const url = `${API}/top-tracks?page=${page}&limit=${limit}`;
   const data = await getJSON<any>(url);
   return normalizePaged(data, { page, limit });
 }
