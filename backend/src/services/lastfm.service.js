@@ -2,6 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { calculateTrackRankingScore } from "../utils/rankingTrackScore.js";
 import { getTrackRegions } from "../utils/geoPresenceCounts.js";
+import { getRandomSongCover } from "./images.service.js";
 dotenv.config();
 
 const baseURL = "https://ws.audioscrobbler.com/2.0/"
@@ -44,7 +45,9 @@ export async function getTopGlobalTracks(){
             )
 
             //console.log(geoScore)
-
+            const imageUri = await getRandomSongCover(); //getImageByArtistAndTrack(track.artist.name, track.name);
+            //console.log(imageUri)
+            
             return {
                 artist: track.artist.name,
                 listeners: trackInfo.listeners,
@@ -55,7 +58,8 @@ export async function getTopGlobalTracks(){
                 genres: trackInfo.toptags?.tag?.map((genre) => genre.name) ?? [],
                 releaseDate: trackInfo.wiki?.published ?? null,
                 rankingScore: rankingScore,
-                regions: regions
+                regions: regions,
+                imageUri: imageUri
             }
         })
     )

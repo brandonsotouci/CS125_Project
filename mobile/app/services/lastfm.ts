@@ -9,10 +9,11 @@ const BASE = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_BASE).replace(/\/$
 const API = `${BASE}/api/lastfm`;
 
 export type Track = {
-  name: string;
+  track: string;
+  album: string;
   artist: string;
   url?: string;
-  imageUrl?: string;
+  imageUri?: string;
   playcount?: number;
   listeners?: number;
 };
