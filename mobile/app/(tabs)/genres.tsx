@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import TrackRow from "./components/TrackRow";
+import TrackRow from "../../components/TrackRow";
 
 import { fetchTopTracksByGenre, Track } from "../services/lastfm";
 
@@ -105,7 +105,7 @@ export default function GenresScreen() {
 
       <FlatList
         data={tracks}
-        keyExtractor={(t, i) => `${t.artist}-${t.name}-${i}`}
+        keyExtractor={(t, i) => `${t.artist}-${t.track}-${i}`}
         renderItem={({ item }) => <TrackRow track={item} />}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         onEndReached={loadMore}

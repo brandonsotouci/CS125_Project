@@ -1,6 +1,6 @@
 import React from "react";
-import { Image, Linking, Pressable, Text, View } from "react-native";
-import type { Track } from "../../services/lastfm";
+import { Image, Linking, StyleSheet, Pressable, Text, View, ViewStyle, StyleProp } from "react-native";
+import type { Track } from "../app/services/lastfm";
 
 export default function TrackRow({ track }: { track: Track }) {
   const onPress = async () => {
@@ -15,22 +15,22 @@ export default function TrackRow({ track }: { track: Track }) {
     }
   };
 
+  console.log(track)
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        flexDirection: "row",
-        gap: 12,
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#eee",
-        alignItems: "center",
-      }}
+      style={({hovered, pressed} : {
+        hovered: boolean,
+        pressed: boolean
+      }): StyleProp<ViewStyle> => [
+        pressableStyles.component,
+        pressed && pressableStyles.pressable,
+        hovered && pressableStyles.pressable,
+      ]}
     >
-      {track.imageUrl ? (
+      {track.imageUri ? (
         <Image
-          source={{ uri: track.imageUrl }}
+          source={{ uri: track.imageUri }}
           style={{ width: 56, height: 56, borderRadius: 10 }}
         />
       ) : (
@@ -46,7 +46,7 @@ export default function TrackRow({ track }: { track: Track }) {
 
       <View style={{ flex: 1 }}>
         <Text style={{ fontWeight: "800" }} numberOfLines={1}>
-          {track.name}
+          {track.track}
         </Text>
         <Text style={{ color: "#666" }} numberOfLines={1}>
           {track.artist}
@@ -60,3 +60,19 @@ export default function TrackRow({ track }: { track: Track }) {
     </Pressable>
   );
 }
+
+
+const pressableStyles = StyleSheet.create({
+    pressable: {
+      backgroundColor: "lightgrey"
+    },
+    component: {
+      flexDirection: "row",
+      gap: 12,
+      padding: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: "#eee",
+      alignItems: "center",
+    }
+})
