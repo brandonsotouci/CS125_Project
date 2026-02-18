@@ -1,9 +1,9 @@
 import { Platform } from "react-native";
 
 const DEFAULT_BASE =
-  Platform.OS === "web" || Platform.OS === "ios"
+  Platform.OS === "web" 
     ? "http://localhost:3000"
-    : "http://10.0.2.2:3000"; // Android emulator
+    : "http://${BASE}:3000"; // Android emulator
 
 const BASE = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_BASE).replace(/\/$/, "");
 const API = `${BASE}/api/lastfm`;
