@@ -7,19 +7,28 @@ export default function Signup() {
     const router = useRouter()
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
+    const [errorMessage, setErrorMessage] = useState<string | null>("")
+    const [loading, setLoading] = useState(false);
 
     const signup = async () => {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_COMPUTER_IP}:${process.env.EXPO_PUBLIC_BACKEND_PORT}/signup`, {
-            method: "POST",
-            headers: { "Content-Type" : "application/json"},
-            body: JSON.stringify({ email, password })
-        })
+        setErrorMessage(null)
+        setLoading(true)
+        try {
+            const res = await fetch(`http://${process.env.EXPO_PUBLIC_COMPUTER_IP}:${process.env.EXPO_PUBLIC_BACKEND_PORT}/signup`, {
+                method: "POST",
+                headers: { "Content-Type" : "application/json"},
+                body: JSON.stringify({ email, password })
+            })
 
-        if (res.ok) {
-            Alert.alert("Account Created!")
-            router.replace('/login');
-        } else {
-            Alert.alert("Signup Failed!")
+            if (!res.ok) {
+                setErrorMessage("Unable to create account!")
+            } else {
+                router.replace('/login');
+            }
+        } catch (err: any){
+            setErrorMessage(err.message)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -40,7 +49,9 @@ export default function Signup() {
                     onChangeText={setPassword}
                     value = {password} 
                 />
+                {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
                 <Pressable
+                    disabled={loading}
                     style={styles.button}
                     onPress={signup} 
                 >
@@ -99,5 +110,8 @@ const styles = StyleSheet.create({
         color: "lightblue", 
         textAlign: "center",
         fontSize: 14
+    },
+    errorText: {
+        color: "red"
     }
 })
