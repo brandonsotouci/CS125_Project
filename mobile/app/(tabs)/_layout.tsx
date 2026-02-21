@@ -1,6 +1,15 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"
+import { useAuth } from "../context/AuthContext";
 export default function TabLayout() {
+
+  const { userToken, loading } = useAuth();
+  if(loading) return null;
+
+  if(!userToken){
+    return <Redirect href="/login" />
+  }
+  
   return (
     <Tabs
       screenOptions={{
