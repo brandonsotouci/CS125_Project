@@ -47,9 +47,8 @@ export function AuthProvider({ children }: {
             setUserToken(token)
             setLoading(false);
         }
-
         loadToken()
-    })
+    }, []);
 
     const login = async (token: string) => {
         await saveToken(token)

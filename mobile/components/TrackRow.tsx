@@ -1,78 +1,35 @@
 import React from "react";
-import { Image, Linking, StyleSheet, Pressable, Text, View, ViewStyle, StyleProp } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 import type { Track } from "../app/services/lastfm";
 
 export default function TrackRow({ track }: { track: Track }) {
-  const onPress = async () => {
-    if (!track) 
-      return null;
-    if (track.url) {
-      try {
-        await Linking.openURL(track.url);
-      } catch {
-        // ignore
-      }
-    }
-  };
-
-  console.log(track)
+  const router = useRouter();
   return (
     <Pressable
-      onPress={onPress}
-      style={({hovered, pressed} : {
-        hovered: boolean,
-        pressed: boolean
-      }): StyleProp<ViewStyle> => [
-        pressableStyles.component,
-        pressed && pressableStyles.pressable,
-        hovered && pressableStyles.pressable,
-      ]}
+      onPress={() =>
+        router.push({ pathname: "/track/[key]", params: { key: track.key } })
+      }
+      style={{
+        flexDirection: "row",
+        gap: 12,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+      }}
     >
-      {track.imageUri ? (
-        <Image
-          source={{ uri: track.imageUri }}
-          style={{ width: 56, height: 56, borderRadius: 10 }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 10,
-            backgroundColor: "#eee",
-          }}
-        />
-      )}
-
+      <Image
+        source={{ uri: track.imageUri }}
+        style={{ width: 56, height: 56, borderRadius: 10 }}
+      />
       <View style={{ flex: 1 }}>
-        <Text style={{ fontWeight: "800" }} numberOfLines={1}>
-          {track.track}
-        </Text>
-        <Text style={{ color: "#666" }} numberOfLines={1}>
-          {track.artist}
-        </Text>
-        <Text style={{ color: "#999", marginTop: 2 }} numberOfLines={1}>
-          {track.playcount ? `Plays: ${track.playcount}` : ""}
-          {track.playcount && track.listeners ? " • " : ""}
-          {track.listeners ? `Listeners: ${track.listeners}` : ""}
+        <Text style={{ fontWeight: "800" }}>{track.track}</Text>
+        <Text>{track.artist}</Text>
+        <Text style={{ opacity: 0.7 }}>
+          {track.listeners} listeners • {track.playcount} plays
         </Text>
       </View>
     </Pressable>
   );
 }
-
-
-const pressableStyles = StyleSheet.create({
-    pressable: {
-      backgroundColor: "lightgrey"
-    },
-    component: {
-      flexDirection: "row",
-      gap: 12,
-      padding: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: "#eee",
-      alignItems: "center",
-    }
-})

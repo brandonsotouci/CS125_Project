@@ -101,3 +101,17 @@ export async function getArtistTopTracks(artist){
 
     return response.data.toptracks.track;
 }
+
+export async function getTrackInfo(artist, track) {
+  const { data } = await axios.get(API, {
+    params: {
+        method: "track.getInfo",
+        api_key: process.env.LASTFM_API_KEY,
+        format: "json",
+        artist,
+        track,
+        autocorrect: 1,
+    },
+  });
+  return data.track;
+}

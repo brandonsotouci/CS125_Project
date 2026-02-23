@@ -57,7 +57,7 @@ export default function ChartsScreen() {
 
       <FlatList
         data={tracks}
-        keyExtractor={(t, i) => `${t.artist}-${t.track}-${i}`}
+        keyExtractor={(t) => t.key}
         renderItem={({ item }) => <TrackRow track={item} />}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         onEndReached={loadMore}

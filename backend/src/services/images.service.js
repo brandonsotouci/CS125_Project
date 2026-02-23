@@ -1,10 +1,8 @@
 import axios from "axios"
-var baseURL = "https://picsum.photos/"
+const baseURL = "https://picsum.photos/";
 
-export async function getRandomSongCover(width = 50, height = 50){
-    const seed = Math.floor(Math.random() * 100);
-    const endpoint = baseURL + "seed/" + seed + "/" + width + "/" + height;
-    return endpoint;
+export function getSongCoverBySeed(seed, width = 300, height = 300) {
+  return `${baseURL}seed/${encodeURIComponent(seed)}/${width}/${height}`;
 }
 
 /*  KEEP THE BOTTOM CODE FOR POTENTIAL FUTURE USE 

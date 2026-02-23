@@ -1,21 +1,28 @@
 import { Platform } from "react-native";
+import * as SecureStore from "expo-secure-store";
 
-const DEFAULT_BASE =
-  Platform.OS === "web" 
-    ? "http://localhost:3000"
-    : "http://${BASE}:3000"; // Android emulator
+
+  Platform.OS === "web"
+  ? "http://localhost:3000"
+  : Platform.OS === "android"
+  ? "http://10.0.2.2:3000"
+  : "http://localhost:3000";
 
 const BASE = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_BASE).replace(/\/$/, "");
 const API = `${BASE}/api/lastfm`;
 
+async function getStoredToken(): Promise<string | null> {
+  if (Platform.OS === "web") return localStorage.getItem("token");
+  return await SecureStore.getItemAsync("token");
+}
+
 export type Track = {
+  key: string;
   track: string;
-  album: string;
   artist: string;
-  url?: string;
-  imageUri?: string;
-  playcount?: number;
-  listeners?: number;
+  playcount: string;
+  listeners: string;
+  imageUri: string;
 };
 
 export type PagedTracksResponse = {
@@ -27,7 +34,14 @@ export type PagedTracksResponse = {
 };
 
 async function getJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  const token = await getStoredToken();
+  const res = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status}: ${text}`);
@@ -110,4 +124,22 @@ export async function getChartTopTracks(
 ): Promise<Track[]> {
   const res = await fetchChartTopTracks(opts);
   return res.tracks;
+}
+
+// BACKEND SINGLE PAGE
+export type TrackDetails = {
+  key: string;
+  track: string;
+  artist: string;
+  album?: string;
+  listeners?: string | number | null;
+  playcount?: string | number | null;
+  imageUri: string;
+  summary?: string;
+  url?: string;
+};
+
+export async function fetchTrackDetails(key: string): Promise<TrackDetails> {
+  const url = `${API}/track/${encodeURIComponent(key)}`;
+  return getJSON<TrackDetails>(url);
 }
