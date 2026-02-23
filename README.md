@@ -64,16 +64,70 @@ Mobile (Frontend): Contains codebase for the expo mobile application. The tech s
 You can clone the repo via HTTPS:
 - HTTPS: `git clone https://github.com/brandonsotouci/CS125_Project.git`
 
+
+## Setup Postgres User
+We will use postgres to store user information and their song preferences to enhance search experiences.
+
+Install Postgres:
+```brew install postgresql```
+
+Start Postgres Service
+```brew services start postgresql```
+
+Verify that Postgres is running
+```brew services list```
+
+Create Database **musicapp** if it doesn't exist
+```createdb musicapp```
+
+Connect to the database
+```psql musciapp```
+
+You are now inside the db!
+
+Create user **musicuser**
+``` CREATE ROLE musicuser WITH LOGIN PASSWORD 'password`; ```
+
+Grant admin rights on the database + auto-grant permissions
+```ALTER DATABASE musicapp OWNER to musicuser;8```
+
+```GRANT ALL PRIVILEGES ON DATABASE musicapp TO musicuser;```
+
+```GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to musicuser;```
+
+```GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to musicuser;```
+
+```GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to musicuser;```
+
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO musicuser```
+
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO musicuser```
+
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO musicuser```
+
+
+Exit our of the session, and run the following in your terminal to verify user works!
+
+```psql -U musicuser -d musicapp```
+
+From root directory, run the following command:
+```psql -U musicuser -d musicapp -f backend/createtable.sql```
+
+
 ### Environment Variables
 The following environment variables need to be configured in  `backend/.env` in order to use the backend:
 
 - LASTFM_API_KEY: The API Key used to retrieve last fm responses. You can retrieve your own token by making an account and registering for a key.
 - PORT: THe port that the backend will use. Our default port is 3000.
+- DATABASE_URL: URL to local musicapp postgres database using the musicuser that was created and password
+- JWT_SECRET: A randomly generated key for auth purposes. You can use ```openssl rand -base64 32``` to generate the random key
 
 Example of `backend/.env` file:
 ```
 LASTFM_API_KEY=your_lastfm_api_key
 PORT=3000
+DATABASE_URL="postgresql://musicuser:password@localhost:5432/musicapp"
+JWT_SECRET="9lDsXcnbSrg40QjxqoV0ihj6PyhY/wrnwNkjXpH7avA="
 ```
 ---
 
@@ -120,8 +174,8 @@ In terms of IOS interaction, a backend server with HTTPS is required and we are 
 Note that the backend server and frontend server must be running at the same time!
 
 
-## Preview
-![Preview of App](preview.png)
+## Sign Up for an account!
+You will signup for an account at **/signup**. Enter email and password that are easy to remember. Password is encrypted so no one knows except you knows the password.
 
 
 ## Next Steps
