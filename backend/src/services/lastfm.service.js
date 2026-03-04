@@ -101,3 +101,18 @@ export async function getArtistTopTracks(artist){
 
     return response.data.toptracks.track;
 }
+
+export async function getTrackInfo(artist, track) {
+  const response = await axios.get(baseURL, {
+    params: {
+        method: "track.getInfo",
+        api_key: API_KEY,
+        format: "json",
+        artist,
+        track,
+    },
+  });
+
+
+  return response.data.track;
+}

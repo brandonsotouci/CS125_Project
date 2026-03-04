@@ -1,24 +1,15 @@
 import React from "react";
 import { Image, Linking, StyleSheet, Pressable, Text, View, ViewStyle, StyleProp } from "react-native";
 import type { Track } from "../app/services/lastfm";
+import { useRouter } from "expo-router";
 
 export default function TrackRow({ track }: { track: Track }) {
-  const onPress = async () => {
-    if (!track) 
-      return null;
-    if (track.url) {
-      try {
-        await Linking.openURL(track.url);
-      } catch {
-        // ignore
-      }
-    }
-  };
-
-  console.log(track)
+  const router = useRouter()
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => 
+        router.push({ pathname: "/track/[track]", params: { artist: track.artist, track: track.track } as any })
+      }
       style={({hovered, pressed} : {
         hovered: boolean,
         pressed: boolean

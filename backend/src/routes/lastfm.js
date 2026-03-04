@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks } from "../services/lastfm.service.js"
+import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo } from "../services/lastfm.service.js"
 import { getRandomSongCover } from "../services/images.service.js";
 
 const router = Router();
@@ -57,5 +57,32 @@ router.get("/artist/:artist/tracks", async (req, res) => {
         res.status(500).json({error: "Failed to fetch artist tracks"})
     }
 })
+
+router.get("/track/:track", async (req, res) => {
+  try {
+    //console.log(req.query)
+    const title = req.params.track
+    const artist = req.query.artist
+
+    //console.log(artist, title)
+    const track = await getTrackInfo(artist, title);
+    const imageUri = await getRandomSongCover()
+    res.json({
+      track: track.name,
+      artist: track.artist || artist,
+      album: track.album?.title || "",
+      listeners: track?.listeners ?? null,
+      playcount: track?.playcount ?? null,
+      imageUri: imageUri,
+      summary: imageUri?.wiki?.summary ? stripHtml(info.wiki.summary) : "",
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ 
+        error: "Failed to fetch track info" 
+    });
+  }
+});
 
 export default router;
