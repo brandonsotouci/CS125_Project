@@ -117,3 +117,29 @@ export async function getChartTopTracks(
   const res = await fetchChartTopTracks(opts);
   return res.tracks;
 }
+
+export async function getPreferences(token: any){
+    const url = `${BASE}/api/postgres/preferences/`
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    return res.json()
+}
+
+export async function updatePreferences(token: any, genres: any){
+    const url = `${BASE}/api/postgres/set-preferences/`
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        genres: genres
+      })
+    })
+
+    return res.json()
+}
