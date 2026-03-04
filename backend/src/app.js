@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import lastfmRouter from "./routes/lastfm.js";
+import postgresRouter from "./routes/postgres.js"
 import bcrypt from "bcrypt"
 import dotenv from "dotenv"
 import { pool } from "./utils/db.js";
@@ -9,10 +10,8 @@ import jwt from "jsonwebtoken"
 dotenv.config()
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret"
 const app = express();
-
 app.use(cors());
 app.use(express.json());
-
 app.get("/health", (req, res) => res.json({ ok: true }));
 
 app.post("/signup", async (req, res) => {
@@ -47,16 +46,14 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials!"})
     }
 
-    const token = jwt.sign(
-      {userId: user.id},
-      JWT_SECRET, 
-      { expiresIn: "7d"}
-    );
+    const token = jwt.sign({userId: user.id}, JWT_SECRET, { expiresIn: "1h"});
+    console.log('signed in')
 
     res.json({ token });
 })
 
 app.use("/api/lastfm", lastfmRouter);
+app.use("/api/postgres", postgresRouter);
 
 app.use((err, req, res, next) => {
   console.error(err);
