@@ -87,6 +87,12 @@ export async function fetchChartTopTracks(
   return normalizePaged(data, { page, limit });
 }
 
+export async function fetchTrack(track: any, artist: any) {
+  const url = `${API}/track/${track}?artist=${artist}&track=${track}`;
+  const data = await getJSON<any>(url);
+  return data;
+}
+
 // --------------------- GET (returns Track[]) ---------------------
 
 export async function getTopTracksByGenre(
