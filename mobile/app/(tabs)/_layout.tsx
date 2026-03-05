@@ -7,6 +7,7 @@ export default function TabLayout() {
   if(loading) return null;
 
   if(!userToken){
+    console.log("here")
     return <Redirect href="/login" />
   }
   
@@ -30,6 +31,14 @@ export default function TabLayout() {
           tabBarIcon: ({color, size}) => (
             <Ionicons name = "person" size = {size} color = {color} />
       ), title: "Artist"}} />
+       <Tabs.Screen name="recommendations" options={{ 
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name = "person" size = {size} color = {color} />
+      ), title: "Recs"}} />
+      <Tabs.Screen name="settings" options={{ 
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name = "settings" size = {size} color = {color} />
+      ), title: "Settings"}} />
     </Tabs>
   );
 }

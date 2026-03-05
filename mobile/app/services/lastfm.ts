@@ -87,6 +87,18 @@ export async function fetchChartTopTracks(
   return normalizePaged(data, { page, limit });
 }
 
+export async function fetchChartRecommendedTracks(
+  opts?: { page?: number; limit?: number }
+): Promise<PagedTracksResponse> {
+  const page = opts?.page ?? 1;
+  const limit = opts?.limit ?? 20;
+
+  const url = `${API}/recommended-tracks?page=${page}&limit=${limit}`;
+
+  const data = await getJSON<any>(url);
+  return normalizePaged(data, { page, limit });
+}
+
 export async function fetchTrack(track: any, artist: any) {
   const url = `${API}/track/${track}?artist=${artist}&track=${track}`;
   const data = await getJSON<any>(url);
