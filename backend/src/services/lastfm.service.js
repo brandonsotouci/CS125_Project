@@ -3,10 +3,81 @@ import dotenv from "dotenv";
 import { calculateTrackRankingScore } from "../utils/rankingTrackScore.js";
 import { getTrackRegions } from "../utils/geoPresenceCounts.js";
 import { getRandomSongCover } from "./images.service.js";
+import { pool } from "../utils/db.js";
 dotenv.config();
 
 const baseURL = "https://ws.audioscrobbler.com/2.0/"
 const API_KEY = process.env.LASTFM_API_KEY;
+
+export async function getRecommendedTracks(){
+    const result = await pool.query(
+        "SELECT name FROM user_genres ug JOIN genres g ON g.id = ug.genre_id"
+    )
+
+    const genres = result.rows
+    const genreResults = []
+
+    const topTracksData = []
+
+    for (let genre of genres){
+        let genreResult = await getTracksByGenre(genre.name)
+        genreResults.push(...genreResult)
+    }  
+    
+    for(let i = 0; i < Math.min(genreResults.length, 10); i++){
+        let randomIndex = Math.floor(Math.random() * genreResults.length)
+        let element = genreResults.splice(randomIndex, 1)[0]
+        topTracksData.push(element)
+    }
+    
+    const enrichedData = await Promise.all(
+        topTracksData.map(async (track) => {
+            const metadata = await axios.get(baseURL, {
+                params: {
+                    method: "track.getInfo",
+                    artist: encodeURIComponent(track.artist.name),
+                    track: encodeURIComponent(track.name),
+                    api_key: API_KEY,
+                    format: "json"
+                }
+            })
+
+            const trackInfo = metadata.data.track;
+            const rankingScore = calculateTrackRankingScore({
+                playcount: parseInt(trackInfo.playcount) || 0,
+                listeners: parseInt(trackInfo.listeners) || 0,
+                rank: track['@attr']?.rank ? parseInt(track['@attr'].rank) : 0,
+                rankChange: 0, //for now,
+                chartPresenceCount: 1 //for now
+            })
+
+            const regions = await getTrackRegions(
+                track.name,
+                track.artist.name
+            )
+
+            //console.log(geoScore)
+            const imageUri = await getRandomSongCover(); //getImageByArtistAndTrack(track.artist.name, track.name);
+            //console.log(imageUri)
+            
+            return {
+                artist: track.artist.name,
+                listeners: trackInfo.listeners,
+                duration: track.duration,
+                playcount: track.playcount ?? null,
+                track: track.name,
+                album: trackInfo.album?.title ?? null,
+                genres: trackInfo.toptags?.tag?.map((genre) => genre.name) ?? [],
+                releaseDate: trackInfo.wiki?.published ?? null,
+                rankingScore: rankingScore,
+                regions: regions,
+                imageUri: imageUri
+            }
+        })
+    )
+    return enrichedData;
+}
+
 
 export async function getTopGlobalTracks(){
     const response = await axios.get(baseURL, {
