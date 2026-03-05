@@ -6,10 +6,9 @@ const router = Router();
 router.get("/preferences", authenticateToken, async (req, res) => {
     const userId = req.user.userId
     const result = await pool.query(
-          "SELECT g.name, ug.genre_id FROM user_genres ug, genres g WHERE ug.user_id = $1", [userId]
+          "SELECT name, genre_id FROM user_genres ug JOIN genres g ON g.id = ug.genre_id WHERE ug.user_id = $1 ", [userId]
     );
 
-    console.log(result.rows)
     res.json({
         genres: result.rows
     })
