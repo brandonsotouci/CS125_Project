@@ -81,15 +81,18 @@ Create Database **musicapp** if it doesn't exist
 ```createdb musicapp```
 
 Connect to the database
-```psql musciapp```
+```psql musicapp```
 
 You are now inside the db!
 
 Create user **musicuser**
 ``` CREATE ROLE musicuser WITH LOGIN PASSWORD 'password`; ```
 
-Grant admin rights on the database + auto-grant permissions
-```ALTER DATABASE musicapp OWNER to musicuser;8```
+Give superuser permissions
+```ALTER ROLE musicuser WITH SUPERUSER;```
+
+Grant admin rights on the database + auto-grant permissions (part is optional I believe but do it just in case)
+```ALTER DATABASE musicapp OWNER to musicuser;```
 
 ```GRANT ALL PRIVILEGES ON DATABASE musicapp TO musicuser;```
 
@@ -99,11 +102,11 @@ Grant admin rights on the database + auto-grant permissions
 
 ```GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to musicuser;```
 
-```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO musicuser```
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO musicuser;```
 
-```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO musicuser```
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO musicuser;```
 
-```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO musicuser```
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO musicuser;```
 
 
 Exit our of the session, and run the following in your terminal to verify user works!
