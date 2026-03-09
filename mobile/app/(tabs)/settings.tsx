@@ -7,6 +7,8 @@ const GENRES = ["Hip-Hop", "Rock", "R&B", "Reaggaeton", "K-Pop", "Pop", "Electro
 
 export default function SettingsPage(){
     const [selectedGenres, setSelectedGenres] : any = useState([])
+    const [artistInput, setArtistInput]: any = useState("")
+    const [artists, setArtists] : any = useState([])
     const [message, setMessage] = useState("")
 
     const { userToken } = useAuth()
@@ -20,8 +22,32 @@ export default function SettingsPage(){
         }
     }
 
+    const addArtist = () => {
+        if(artistInput && !artists.includes(artistInput)){
+            setArtists([...artists, artistInput])
+            setArtistInput("")
+        }
+    }
+
+    const removeArtist = (artist: any) => {
+        if(artists.includes(artist)){
+            const newArtistArray = artists.filter(item => item !== artist)
+            setArtists(newArtistArray)
+        }
+    }
+
     const handlePreferences = async () => {
-       const response = await updatePreferences(userToken, selectedGenres)
+        try {
+            const response = await updatePreferences(userToken, selectedGenres, artists)
+            setMessage("Preferences Updated!")
+        } catch (err: any){
+            setMessage(err.message)
+        } finally {
+            setTimeout(() => {
+                setMessage("")
+            }, 2000)
+        }
+       
     }
 
     useEffect(() => {
@@ -38,8 +64,9 @@ export default function SettingsPage(){
         loadPreferences()
     }, [])
 
-    return <ScrollView>
-        <Text>Select Favorite Genres</Text>
+    return <ScrollView contentContainerStyle = {styles.container}>
+        {message && <Text style={styles.messageText}>{message}</Text>}
+        <Text style = {styles.title}>Select Favorite Genres</Text>
         <View>
             {true && <FlatList 
                     data = {GENRES}
@@ -58,6 +85,30 @@ export default function SettingsPage(){
                 />}
         </View>
 
+
+        <Text style = {styles.artistTitle}>Select Favorite Artists</Text>
+        <View style = {styles.inputContainer}>
+            <TextInput placeholder="Add artist..."
+                style={styles.inputBox}
+                value={artistInput}
+                onChangeText={setArtistInput}
+            ></TextInput>
+            <Pressable style = {styles.addButton} onPress={addArtist}>
+                <Text style={styles.addButtonText}>Add</Text>
+            </Pressable>
+        </View>
+        <FlatList 
+            data={artists}
+            keyExtractor={(item) =>item}
+            renderItem={({item}) => (
+                <View style={styles.artistItem}>
+                    <Text style={styles.artistText}>{item}</Text>
+                    <Pressable style = {styles.removeArtistItem} onPress = {() => removeArtist(item)}>
+                        <Text>X</Text>
+                    </Pressable>
+                </View>
+            )} 
+        />
         <Pressable onPress={handlePreferences} style={styles.updateButton}>
             <Text style={styles.updateText}>
                 Update Preferences 
@@ -68,22 +119,39 @@ export default function SettingsPage(){
 }
 
 const styles = StyleSheet.create({
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        alignSelf: "center",
+        alignItems: "center"
+    },
+    messageText: {
+        color: "red"
+    },
+    title: {
+        fontSize: 18,
+        marginVertical: 4
+    },
+    artistTitle: {
+        fontSize: 18,
+        marginVertical: 24
+    },
     genreItem: {
         padding: 12,
-        backgroundColor: "gray",
-        width: 300,
-        marginVertical: 6,
+        backgroundColor: "#F3F4Ff",
+        width: 250,
+        marginVertical: 12,
         borderRadius: 12
     },
     genreText: {
-        color: "white"
+        color: "black"
     },
     selected: {
-        backgroundColor: "blue"
+        backgroundColor: "#f54263"
     },
     updateButton: {
         marginTop: 20,
-        backgroundColor: "#7c3aed",
+        backgroundColor: "#000",
         width: 250,
         padding: 12,
         borderRadius: 8,
@@ -91,8 +159,50 @@ const styles = StyleSheet.create({
 
     },
     updateText: {
-        color: "darkblue",
+        color: "white",
         fontSize: 14,
         fontWeight: "bold"
+    },
+    inputContainer: {
+        display: "flex",
+        flexDirection: "row",
+        gap: 12
+    },
+    inputBox: {
+        backgroundColor: "black",
+        color: "white",
+        width: 200,
+        padding: 12,
+        paddingLeft: 16,
+        borderRadius: 12
+
+    },
+    addButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 8,
+        backgroundColor: "black",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    addButtonText: {
+        color: "white"
+    },
+    artistItem: {
+        padding: 12,
+        backgroundColor: "#f54263",
+        display: "flex",
+        flexDirection: "row",
+        width: 200,
+        marginVertical: 12,
+        borderRadius: 12
+    },
+    removeArtistItem: {
+        position: "absolute",
+        right: 20
+    },
+    artistText: {
+        color: "white"
     }
 })

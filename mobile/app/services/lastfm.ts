@@ -140,7 +140,7 @@ export async function getPreferences(token: any){
     return res.json()
 }
 
-export async function updatePreferences(token: any, genres: any){
+export async function updatePreferences(token: any, genres: any, artists: any){
     const url = `${BASE}/api/postgres/set-preferences/`
     const res = await fetch(url, {
       method: "POST",
@@ -149,7 +149,8 @@ export async function updatePreferences(token: any, genres: any){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        genres: genres
+        genres: genres,
+        artists: artists
       })
     })
 

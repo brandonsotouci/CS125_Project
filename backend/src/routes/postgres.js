@@ -17,11 +17,13 @@ router.get("/preferences", authenticateToken, async (req, res) => {
 router.post("/set-preferences", authenticateToken, async (req, res) => {
     const userId = req.user.userId
     const genres = req.body["genres"]
+    const artists = req.body["artists"]
 
-    console.log(userId, genres)
+    console.log(userId, genres, artists)
 
     try {
-        const deleteRes = await pool.query("DELETE FROM user_genres WHERE user_id = $1", [userId])
+        await pool.query("DELETE FROM user_genres WHERE user_id = $1", [userId])
+        await pool.query("DELETE FROM user_artists WHERE user_id = $1", [userId])
 
         for(const genre of genres) {
             let result = await pool.query(
@@ -45,7 +47,14 @@ router.post("/set-preferences", authenticateToken, async (req, res) => {
 
         }
 
-        res.json({ message: "Genres added successfully "})
+        for(const artist of artists){
+            await pool.query(
+                `INSERT INTO user_artists (user_id, artist, weight) VALUES ($1, $2, $3)
+                ON CONFLICT DO NOTHING`, [userId, artist, 1]
+            )
+        }
+
+        res.json({ message: "Genres and artists added successfully "})
         
     } catch (err) {
         res.status(500).json({error: err.message})
