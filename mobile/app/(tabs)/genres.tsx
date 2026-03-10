@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 import TrackRow from "../../components/TrackRow";
 
 import { fetchTopTracksByGenre, Track } from "../services/lastfm";
@@ -66,7 +67,7 @@ export default function GenresScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, gap: 12 }}>
+    <SafeAreaView style={{ flex: 1, padding: 12, paddingTop: 2, width: "100%", margin: 0, gap: 6 }}>
       <Text style={{ fontSize: 22, fontWeight: "900" }}>Genres</Text>
 
       <View style={{ flexDirection: "row", gap: 8 }}>

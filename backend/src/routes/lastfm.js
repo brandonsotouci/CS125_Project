@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo, getRecommendedTracks } from "../services/lastfm.service.js"
 import { getRandomSongCover } from "../services/images.service.js";
+import { authenticateToken } from "../../middleware/auth.js";
 
 const router = Router();
 
@@ -13,16 +14,6 @@ router.get("/top-tracks", async (req, res) => {
         res.status(500).json({error: "Failed to fetch top global tracks"})
     }
 
-})
-
-router.get("/recommended-tracks", async (req, res) => {
-    try {
-        const tracksData = await getRecommendedTracks()
-        return res.json(tracksData)
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({error: "Failed to fetch top global tracks"})
-    }
 })
 
 router.get("/genre/:tag/tracks", async (req, res) => {

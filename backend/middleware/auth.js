@@ -2,11 +2,16 @@ import jwt from "jsonwebtoken"
 
 export const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization']
-    const token = authHeader.split(" ")[1]
-    console.log(token)
+    if(!authHeader){
+        return res.status(401).json({ message: "No token provided"})
+    }
 
-    if(!token) return res.redirect('/login')
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded
-    next()
+    try {
+        const token = authHeader.split(" ")[1]
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded
+        next()
+    } catch (err) {
+        return res.status(401).json({ message: "Token Expired!"})
+    }
 }

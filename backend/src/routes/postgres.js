@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { authenticateToken } from "../../middleware/auth.js";
 import { pool } from "../utils/db.js";
+import { getRecommendedTracks } from "../services/lastfm.service.js";
 const router = Router();
 
 router.get("/preferences", authenticateToken, async (req, res) => {
@@ -9,10 +10,21 @@ router.get("/preferences", authenticateToken, async (req, res) => {
           "SELECT name, genre_id FROM user_genres ug JOIN genres g ON g.id = ug.genre_id WHERE ug.user_id = $1 ", [userId]
     );
 
+    const artistResults = await pool.query(
+        "SELECT artist FROM user_artists WHERE user_id = $1", [userId]
+    )
+
     res.json({
-        genres: result.rows
+        genres: result.rows,
+        artists: artistResults.rows
     })
-})
+});
+
+router.get("/recommended-tracks", authenticateToken, async (req, res) => {
+    const userId = req.user.userId
+    const tracksData = await getRecommendedTracks(userId)
+    res.json(tracksData)
+});
 
 router.post("/set-preferences", authenticateToken, async (req, res) => {
     const userId = req.user.userId

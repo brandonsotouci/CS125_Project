@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, TouchableOpacity, FlatList, ListRenderItem, ListRenderItemInfo } from "react-native"
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, TouchableOpacity, FlatList, ListRenderItem, ListRenderItemInfo, ScrollViewBase } from "react-native"
 import { getPreferences, updatePreferences } from '../services/lastfm'
 import { useAuth } from '../context/AuthContext'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { relative } from 'path'
 
 const GENRES = ["Hip-Hop", "Rock", "R&B", "Reaggaeton", "K-Pop", "Pop", "Electronic"]
 
@@ -10,7 +12,6 @@ export default function SettingsPage(){
     const [artistInput, setArtistInput]: any = useState("")
     const [artists, setArtists] : any = useState([])
     const [message, setMessage] = useState("")
-
     const { userToken } = useAuth()
 
     const toggleGenre = (selected: any) => {
@@ -54,25 +55,32 @@ export default function SettingsPage(){
         const loadPreferences = async () => {
             const response = await getPreferences(userToken)
             let loadedGenres = []
+            let loadedArtists = []
+
             for (let genreEntry of response.genres){
                 loadedGenres.push(genreEntry.name)
             }
 
             setSelectedGenres(loadedGenres)
+
+            for (let artistEntry of response.artists){
+                loadedArtists.push(artistEntry.artist)
+            }
+
+            setArtists(loadedArtists)
         }
 
         loadPreferences()
     }, [])
 
-    return <ScrollView contentContainerStyle = {styles.container}>
+    return <SafeAreaView style = {{flex: 1}} >
+        <ScrollView contentContainerStyle = {styles.container}>
         {message && <Text style={styles.messageText}>{message}</Text>}
         <Text style = {styles.title}>Select Favorite Genres</Text>
-        <View>
-            {true && <FlatList 
+             <FlatList 
                     data = {GENRES}
                     keyExtractor={(item) => item}
                     renderItem={({ item }) => {
-                        console.log(item)
                         const selected = selectedGenres.includes(item)
                         return <Pressable onPress = {() => toggleGenre(item)}
                                 style = {[
@@ -82,8 +90,7 @@ export default function SettingsPage(){
                             <Text style={styles.genreText}>{item}</Text>
                         </Pressable>
                     }}
-                />}
-        </View>
+            />
 
 
         <Text style = {styles.artistTitle}>Select Favorite Artists</Text>
@@ -114,8 +121,8 @@ export default function SettingsPage(){
                 Update Preferences 
             </Text>
         </Pressable>
-     
     </ScrollView>
+    </SafeAreaView>
 }
 
 const styles = StyleSheet.create({
@@ -123,14 +130,15 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "column",
         alignSelf: "center",
-        alignItems: "center"
+        alignItems: "center",
+        height: 1000
     },
     messageText: {
         color: "red"
     },
     title: {
         fontSize: 18,
-        marginVertical: 4
+        marginVertical: 12
     },
     artistTitle: {
         fontSize: 18,
@@ -166,16 +174,16 @@ const styles = StyleSheet.create({
     inputContainer: {
         display: "flex",
         flexDirection: "row",
-        gap: 12
+        gap: 12,
     },
     inputBox: {
         backgroundColor: "black",
-        color: "white",
+        color: "#FFF",
         width: 200,
         padding: 12,
         paddingLeft: 16,
-        borderRadius: 12
-
+        borderRadius: 12,
+        position: "relative"
     },
     addButton: {
         width: 50,
@@ -194,9 +202,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#f54263",
         display: "flex",
         flexDirection: "row",
+        alignItems: "center",
         width: 200,
         marginVertical: 12,
-        borderRadius: 12
+        borderRadius: 12,
+        position: "relative"
     },
     removeArtistItem: {
         position: "absolute",

@@ -9,29 +9,58 @@ dotenv.config();
 const baseURL = "https://ws.audioscrobbler.com/2.0/"
 const API_KEY = process.env.LASTFM_API_KEY;
 
-export async function getRecommendedTracks(){
+export async function getRecommendedTracks(userId){
     const result = await pool.query(
-        "SELECT name FROM user_genres ug JOIN genres g ON g.id = ug.genre_id"
+        "SELECT name FROM user_genres ug JOIN genres g ON g.id = ug.genre_id WHERE ug.user_id = $1", [userId]
+    )
+
+    const artistEntries = await pool.query(
+        "SELECT artist FROM user_artists WHERE user_id = $1", [userId]
     )
 
     const genres = result.rows
+    const artists = artistEntries.rows
     const genreResults = []
-
+    const artistResults = []
     const topTracksData = []
 
     for (let genre of genres){
-        let genreResult = await getTracksByGenre(genre.name)
-        genreResults.push(...genreResult)
+        try {
+            let genreResult = await getTracksByGenre(genre.name, Math.floor(10 / genres.length))
+            genreResults.push(...genreResult)
+        } catch (err){
+            continue
+        }
     }  
+
+    for(let artist of artists){
+        try {
+            let artistResult = await getArtistTopTracks(artist.artist, Math.floor(10 / artists.length))
+            artistResults.push(...artistResult)
+        } catch (err) {
+            continue
+        }
+    }   
+
     
     for(let i = 0; i < Math.min(genreResults.length, 10); i++){
-        let randomIndex = Math.floor(Math.random() * genreResults.length)
-        let element = genreResults.splice(randomIndex, 1)[0]
+        //let randomIndex = Math.floor(Math.random() * genreResults.length)
+        //let element = genreResults.splice(randomIndex, 1)[0]
+        let element = genreResults[i]
+        topTracksData.push(element)
+    }
+
+
+    for(let i = 0; i < Math.min(artistResults.length, 10); i++){
+        //let randomIndex = Math.floor(Math.random() * artistResults.length)
+        //let element = artistResults.splice(randomIndex, 1)[0]
+        let element = artistResults[i]
         topTracksData.push(element)
     }
     
     const enrichedData = await Promise.all(
         topTracksData.map(async (track) => {
+
             const metadata = await axios.get(baseURL, {
                 params: {
                     method: "track.getInfo",
@@ -56,9 +85,7 @@ export async function getRecommendedTracks(){
                 track.artist.name
             )
 
-            //console.log(geoScore)
             const imageUri = await getRandomSongCover(); //getImageByArtistAndTrack(track.artist.name, track.name);
-            //console.log(imageUri)
             
             return {
                 artist: track.artist.name,
@@ -66,15 +93,17 @@ export async function getRecommendedTracks(){
                 duration: track.duration,
                 playcount: track.playcount ?? null,
                 track: track.name,
-                album: trackInfo.album?.title ?? null,
+                album: track.album?.name ?? null,
                 genres: trackInfo.toptags?.tag?.map((genre) => genre.name) ?? [],
                 releaseDate: trackInfo.wiki?.published ?? null,
                 rankingScore: rankingScore,
-                regions: regions,
+                regions: regions ?? null,
                 imageUri: imageUri
             }
         })
     )
+
+    enrichedData.sort(() => Math.random() - 0.5)
     return enrichedData;
 }
 
@@ -139,7 +168,7 @@ export async function getTopGlobalTracks(){
     return enrichedData;
 }
 
-export async function getTracksByGenre(tag){
+export async function getTracksByGenre(tag, limit = 50){
     if(!tag){
         console.log("TAG MISSING?");
         throw new Error("Genre tag paramater is required!")
@@ -151,7 +180,7 @@ export async function getTracksByGenre(tag){
             tag,
             api_key: API_KEY,
             format: "json",
-            limit: 50,
+            limit: limit,
         }
     })
 
@@ -159,14 +188,14 @@ export async function getTracksByGenre(tag){
     return response.data.tracks.track;
 }
 
-export async function getArtistTopTracks(artist){
+export async function getArtistTopTracks(artist, limit = 10){
     const response = await axios.get(baseURL, {
         params: {
             method: "artist.gettoptracks",
             artist: artist,
             api_key: API_KEY,
             format: "json",
-            limit: 10
+            limit: limit
         }
     });
 

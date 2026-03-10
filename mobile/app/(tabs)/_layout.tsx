@@ -2,10 +2,10 @@ import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext";
 export default function TabLayout() {
-
   const { userToken, loading } = useAuth();
   if(loading) return null;
-
+  console.log("token?: ", userToken)
+  
   if(!userToken){
     console.log("here")
     return <Redirect href="/login" />
@@ -15,7 +15,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerTitle: "Discoverfy",
-        headerTintColor: "red"
+        headerTintColor: "red",
       }}  
     >
       <Tabs.Screen name="index" options={
