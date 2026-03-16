@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, TouchableOpac
 import { getPreferences, updatePreferences } from '../services/lastfm'
 import { useAuth } from '../context/AuthContext'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { relative } from 'path'
 
 const GENRES = ["Hip-Hop", "Rock", "R&B", "Reaggaeton", "K-Pop", "Pop", "Electronic"]
 
