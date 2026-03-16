@@ -2,11 +2,12 @@ import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext";
 export default function TabLayout() {
-
   const { userToken, loading } = useAuth();
   if(loading) return null;
-
+  console.log("token?: ", userToken)
+  
   if(!userToken){
+    console.log("here")
     return <Redirect href="/login" />
   }
   
@@ -14,7 +15,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerTitle: "Discoverfy",
-        headerTintColor: "red"
+        headerTintColor: "red",
       }}  
     >
       <Tabs.Screen name="index" options={
@@ -30,6 +31,14 @@ export default function TabLayout() {
           tabBarIcon: ({color, size}) => (
             <Ionicons name = "person" size = {size} color = {color} />
       ), title: "Artist"}} />
+       <Tabs.Screen name="recommendations" options={{ 
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name = "person" size = {size} color = {color} />
+      ), title: "Recs"}} />
+      <Tabs.Screen name="settings" options={{ 
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name = "settings" size = {size} color = {color} />
+      ), title: "Settings"}} />
     </Tabs>
   );
 }

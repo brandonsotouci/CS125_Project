@@ -1,12 +1,12 @@
 import { Platform } from "react-native";
+import { useAuth } from "../context/AuthContext";
 
-const DEFAULT_BASE =
-  Platform.OS === "web" 
-    ? "http://localhost:3000"
-    : "http://${BASE}:3000"; // Android emulator
 
-const BASE = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_BASE).replace(/\/$/, "");
+const BASE: any  = `http://${process.env.EXPO_PUBLIC_COMPUTER_IP}:3000`; // Android emulator
+
 const API = `${BASE}/api/lastfm`;
+
+const { logout } = useAuth()
 
 export type Track = {
   track: string;
@@ -26,8 +26,14 @@ export type PagedTracksResponse = {
   artistQuery?: string;
 };
 
-async function getJSON<T>(url: string): Promise<T> {
+async function getJSON<T>(url: string) {
   const res = await fetch(url, { headers: { Accept: "application/json" } });
+
+  if (res.status == 401){
+    await logout();
+    return null;
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status}: ${text}`);
@@ -87,6 +93,18 @@ export async function fetchChartTopTracks(
   return normalizePaged(data, { page, limit });
 }
 
+export async function fetchChartRecommendedTracks(token: any) {
+  console.log(BASE)
+  const url = `${BASE}/api/postgres/recommended-tracks`;
+  const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+  return res.json()
+}
+
 export async function fetchTrack(track: any, artist: any) {
   const url = `${API}/track/${track}?artist=${artist}&track=${track}`;
   const data = await getJSON<any>(url);
@@ -128,7 +146,7 @@ export async function getPreferences(token: any){
     return res.json()
 }
 
-export async function updatePreferences(token: any, genres: any){
+export async function updatePreferences(token: any, genres: any, artists: any){
     const url = `${BASE}/api/postgres/set-preferences/`
     const res = await fetch(url, {
       method: "POST",
@@ -137,7 +155,8 @@ export async function updatePreferences(token: any, genres: any){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        genres: genres
+        genres: genres,
+        artists: artists
       })
     })
 

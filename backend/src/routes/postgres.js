@@ -1,28 +1,41 @@
 import { Router } from "express"
 import { authenticateToken } from "../../middleware/auth.js";
 import { pool } from "../utils/db.js";
+import { getRecommendedTracks } from "../services/lastfm.service.js";
 const router = Router();
 
 router.get("/preferences", authenticateToken, async (req, res) => {
     const userId = req.user.userId
     const result = await pool.query(
-          "SELECT g.name, ug.genre_id FROM user_genres ug, genres g WHERE ug.user_id = $1", [userId]
+          "SELECT name, genre_id FROM user_genres ug JOIN genres g ON g.id = ug.genre_id WHERE ug.user_id = $1 ", [userId]
     );
 
-    console.log(result.rows)
+    const artistResults = await pool.query(
+        "SELECT artist FROM user_artists WHERE user_id = $1", [userId]
+    )
+
     res.json({
-        genres: result.rows
+        genres: result.rows,
+        artists: artistResults.rows
     })
-})
+});
+
+router.get("/recommended-tracks", authenticateToken, async (req, res) => {
+    const userId = req.user.userId
+    const tracksData = await getRecommendedTracks(userId)
+    res.json(tracksData)
+});
 
 router.post("/set-preferences", authenticateToken, async (req, res) => {
     const userId = req.user.userId
     const genres = req.body["genres"]
+    const artists = req.body["artists"]
 
-    console.log(userId, genres)
+    console.log(userId, genres, artists)
 
     try {
-        const deleteRes = await pool.query("DELETE FROM user_genres WHERE user_id = $1", [userId])
+        await pool.query("DELETE FROM user_genres WHERE user_id = $1", [userId])
+        await pool.query("DELETE FROM user_artists WHERE user_id = $1", [userId])
 
         for(const genre of genres) {
             let result = await pool.query(
@@ -46,7 +59,14 @@ router.post("/set-preferences", authenticateToken, async (req, res) => {
 
         }
 
-        res.json({ message: "Genres added successfully "})
+        for(const artist of artists){
+            await pool.query(
+                `INSERT INTO user_artists (user_id, artist, weight) VALUES ($1, $2, $3)
+                ON CONFLICT DO NOTHING`, [userId, artist, 1]
+            )
+        }
+
+        res.json({ message: "Genres and artists added successfully "})
         
     } catch (err) {
         res.status(500).json({error: err.message})

@@ -1,6 +1,7 @@
 import { Router } from "express"
-import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo } from "../services/lastfm.service.js"
+import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo, getRecommendedTracks } from "../services/lastfm.service.js"
 import { getRandomSongCover } from "../services/images.service.js";
+import { authenticateToken } from "../../middleware/auth.js";
 
 const router = Router();
 
