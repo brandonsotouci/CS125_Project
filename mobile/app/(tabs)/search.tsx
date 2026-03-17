@@ -6,6 +6,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { smartGetDataFromQuery } from "../services/lastfm";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface SearchComponentProps {
     searchInput: string;
@@ -60,11 +61,11 @@ export default function MasterSearchScreen() {
     }, [searchInput])
 
     return (
-        <ScrollView style = {styles.strictContainer}>
-            <MasterSearchBar searchInput = {searchInput} onChangeInput = {setSearchInput} placeholder={"Search song, artist, album, ..."} />
-            {!searchInput && <GenreGridComponent setQueryInput = {setSearchInput}/>}
-            {searchInput && <SearchResults searchQuery = {searchInput} results={items} loading={loading} onItemPress={setItems} />}
-         </ScrollView>
+            <ScrollView style = {styles.strictContainer}>
+                <MasterSearchBar searchInput = {searchInput} onChangeInput = {setSearchInput} placeholder={"Search song, artist, album, ..."} />
+                {!searchInput && <GenreGridComponent setQueryInput = {setSearchInput}/>}
+                {searchInput && <SearchResults searchQuery = {searchInput} results={items} loading={loading} onItemPress={setItems} />}
+            </ScrollView>
     );
 }
 

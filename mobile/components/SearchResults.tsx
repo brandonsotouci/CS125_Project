@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { FlatList, ScrollView, ScrollViewBase, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -9,6 +10,8 @@ interface SearchResultsProps {
   emptyStateText?: string;
   error?: string;
 }
+
+const router = useRouter()
 
 const AlbumTab = ({item, onItemPress} : any) => {
    return  <TouchableOpacity 
@@ -22,7 +25,9 @@ const AlbumTab = ({item, onItemPress} : any) => {
 const TrackTab = ({item, onItemPress} : any) => {
    return  <TouchableOpacity 
               style={styles.resultItem}
-              onPress={() => onItemPress?.(item)}>
+              onPress={() => 
+                  router.push({ pathname: "/track/[track]", params: { artist: item.artist, track: item.track } as any })
+              }>
                 <Text style={styles.resultText}>{item.track || 'Untitled'}</Text>
                 {item.artist && (<Text style={styles.resultSubtitle}>Song - {item.artist}</Text>)}
           </TouchableOpacity> 
@@ -47,7 +52,7 @@ const SearchResults = ({
   return (
     <SafeAreaView style = {styles.container}>
       {loading ? (
-       <Text>Loading...</Text>
+       <Text style = {styles.smallHeaderText}>Loading...</Text>
       ) : results.length > 0 ? (
         <View style={styles.resultsList}>
           <Text style = {styles.smallHeaderText}>Results for {searchQuery}</Text>
@@ -76,7 +81,8 @@ const styles = StyleSheet.create({
   },
   smallHeaderText: {
     paddingHorizontal: 16,
-    fontWeight: "bold"
+    fontWeight: "bold",
+    color: "white"
   },
   skeletonContainer: {
     marginVertical: 8,
@@ -100,11 +106,11 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: 'white',
   },
   resultSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#AAA',
     marginTop: 4,
   },
   emptyState: {
@@ -113,7 +119,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#eee',
     textAlign: 'center',
   },
   errorContainer: {

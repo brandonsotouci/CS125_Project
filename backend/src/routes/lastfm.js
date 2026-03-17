@@ -105,6 +105,7 @@ router.get("/track/:track", async (req, res) => {
       album: track.album?.title || "",
       listeners: track?.listeners ?? null,
       playcount: track?.playcount ?? null,
+      duration: track?.duration ?? null,
       imageUri: imageUri,
       summary: imageUri?.wiki?.summary ? stripHtml(info.wiki.summary) : "",
     });

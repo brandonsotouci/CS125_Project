@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: "medium",
+    color: "white",
     marginVertical: 4,
     textAlign: "left"
   },
