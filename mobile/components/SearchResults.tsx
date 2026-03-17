@@ -10,6 +10,24 @@ interface SearchResultsProps {
   error?: string;
 }
 
+const AlbumTab = ({item, onItemPress} : any) => {
+   return  <TouchableOpacity 
+              style={styles.resultItem}
+              onPress={() => onItemPress?.(item)}>
+                <Text style={styles.resultText}>{item.title || 'Unknown Title'}</Text>
+                {item.artist && (<Text style={styles.resultSubtitle}>Album - {item.artist}</Text>)}
+          </TouchableOpacity> 
+}
+
+const TrackTab = ({item, onItemPress} : any) => {
+   return  <TouchableOpacity 
+              style={styles.resultItem}
+              onPress={() => onItemPress?.(item)}>
+                <Text style={styles.resultText}>{item.track || 'Untitled'}</Text>
+                {item.artist && (<Text style={styles.resultSubtitle}>Song - {item.artist}</Text>)}
+          </TouchableOpacity> 
+}
+
 const SearchResults = ({ 
   searchQuery, 
   loading, 
@@ -34,20 +52,11 @@ const SearchResults = ({
         <View style={styles.resultsList}>
           <Text style = {styles.smallHeaderText}>Results for {searchQuery}</Text>
           {results.map((item, index) => (
-            <TouchableOpacity 
+            <View
               key={index} 
-              style={styles.resultItem}
-              onPress={() => onItemPress?.(item)}
             >
-              <Text style={styles.resultText}>
-                {item.track || 'Untitled'}
-              </Text>
-              {item.artist && (
-                <Text style={styles.resultSubtitle}>
-                  {item.artist}
-                </Text>
-              )}
-            </TouchableOpacity>
+              {item.type === "song" ? <TrackTab item = {item} onItemPress = {onItemPress} /> : <AlbumTab item = {item} onItemPress={onItemPress}/>}
+            </View>
           ))}
         </View>
       ) : (

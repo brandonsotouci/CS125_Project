@@ -163,6 +163,34 @@ export async function updatePreferences(token: any, genres: any, artists: any){
     return res.json()
 }
 
+export async function updateAlbums(tracks: any, token: any){
+  for(const track of tracks) {
+      const url = `${BASE}/api/postgres/set-album/`
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          artist: track.artist,
+          name: track.track
+        })
+      })
+    }
+}
+
+export async function getAlbums(album: any, token: string){
+  const url = `${BASE}/api/postgres/albums/${album}`
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    return res.json()
+}
+
 export async function getTrack(track: string){
     const url = `${API}/song/${track}?song=${track}`;
     const data = await getJSON<any>(url);
@@ -171,13 +199,26 @@ export async function getTrack(track: string){
 
 }
 
-export async function smartGetDataFromQuery(query: string){
+export async function smartGetDataFromQuery(query: string, token: string){
+  const albumResults = await getAlbums(query, token)
+  /*title, artist */
   for(let genre of GENRES) {
     if(genre.name.toLowerCase() == query.toLowerCase()){
         const genreResponse = await getTopTracksByGenre(query)
-        return genreResponse
+        return { 
+          albums: albumResults ? albumResults : [], 
+          tracks: genreResponse
+        }
     }
   }
   const trackResponse = await getTrack(query)
-  return trackResponse
+  //await updateAlbums(trackResponse, token)
+
+  //{"albums: [], songs: []"}
+  const results = {
+    albums: albumResults ? albumResults : [],
+    tracks: trackResponse
+  }
+  
+  return results
 }

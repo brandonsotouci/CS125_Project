@@ -64,16 +64,18 @@ router.get("/song/:song", async (req, res) => {
         const song = req.params.song
         const tracks = await getTrackByTitleOnly(song)
         if (tracks != null){
-            //console.log(track)
-            const parsedTracks = tracks.map((track) => ({
-                track: track?.name,
-                artist: track?.artist,
-                listeners: track?.listeners,
-                mbid: track?.mbid
+            const parsedTracks = tracks.map((track) => {
+                const metadata = getTrackInfo(track.artist, track.name)
+                return ({
+                    track: track?.name,
+                    artist: track?.artist,
+                    album: metadata.album?.title || "",
+                    listeners: track?.listeners,
+                    mbid: track?.mbid
 
-            }))
+                })})
 
-            console.log(parsedTracks)
+            //console.log(parsedTracks)
             res.json(parsedTracks)
 
         } else {

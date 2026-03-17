@@ -20,6 +20,30 @@ router.get("/preferences", authenticateToken, async (req, res) => {
     })
 });
 
+router.get("/albums/:query", authenticateToken, async (req, res) => {
+    const query = req.params.query
+    console.log(query)
+    let result = await pool.query("SELECT * FROM albums WHERE title = $1", [query])
+    if(result.rows.length !== 0){
+        console.log(result.rows)
+        res.json(result.rows)
+    } else {
+        res.json([])
+    }
+})
+
+router.post("/set-album", authenticateToken, async (req, res) => {
+    const artist = req.body["artist"]
+    const name = req.body["name"]
+    let result = await pool.query("SELECT * FROM albums WHERE title = $1 AND artist = $2", [name, artist])
+    if(result.rows.length !== 0){
+        res.status(409).json({ message: "Duplicate entry "})
+    } else {
+        await pool.query("INSERT INTO albums (title, artist) VALUES ($1, $2)", [name, artist])
+        res.status(201).json({ message: "Album entry created "})
+    }
+})
+
 router.get("/recommended-tracks", authenticateToken, async (req, res) => {
     const userId = req.user.userId
     const tracksData = await getRecommendedTracks(userId)

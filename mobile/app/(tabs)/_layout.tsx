@@ -1,15 +1,17 @@
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
 export default function TabLayout() {
   const { userToken, loading } = useAuth();
+  const router = useRouter()
   if(loading) return null;
-  console.log("token?: ", userToken)
   
-  if(!userToken){
-    console.log("here")
-    return <Redirect href="/login" />
-  }
+  useEffect(() => {
+      if(!userToken){
+         router.replace("/login")
+      }
+  }, [])
   
   return (
     <Tabs
