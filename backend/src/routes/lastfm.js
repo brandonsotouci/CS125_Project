@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo, getRecommendedTracks } from "../services/lastfm.service.js"
+import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo, getRecommendedTracks, getTrackByTitleOnly } from "../services/lastfm.service.js"
 import { getRandomSongCover } from "../services/images.service.js";
 import { authenticateToken } from "../../middleware/auth.js";
 
@@ -56,6 +56,35 @@ router.get("/artist/:artist/tracks", async (req, res) => {
     } catch (err){
         console.error(err);
         res.status(500).json({error: "Failed to fetch artist tracks"})
+    }
+})
+
+router.get("/song/:song", async (req, res) => {
+    try {
+        const song = req.params.song
+        const tracks = await getTrackByTitleOnly(song)
+        if (tracks != null){
+            //console.log(track)
+            const parsedTracks = tracks.map((track) => ({
+                track: track?.name,
+                artist: track?.artist,
+                listeners: track?.listeners,
+                mbid: track?.mbid
+
+            }))
+
+            console.log(parsedTracks)
+            res.json(parsedTracks)
+
+        } else {
+            res.json({})
+        }
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ 
+            error: err.messsage
+        })
     }
 })
 

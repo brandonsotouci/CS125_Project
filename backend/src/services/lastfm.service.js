@@ -213,6 +213,22 @@ export async function getTrackInfo(artist, track) {
     },
   });
 
-
   return response.data.track;
+}
+
+export async function getTrackByTitleOnly(title, limit = 20){
+    const response = await axios.get(baseURL, {
+        params: {
+            method: "track.search",
+            api_key: API_KEY,
+            format: "json",
+            track: title,
+        }
+    })
+
+    if (response?.data.length !== 0) {
+        return response?.data?.results?.trackmatches?.track
+    }
+
+    return null;
 }

@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { useAuth } from "../context/AuthContext";
-
+import { GENRES, GenreTabEntry } from "@/constants/Constants";
 
 const BASE: any  = `http://${process.env.EXPO_PUBLIC_COMPUTER_IP}:3000`; // Android emulator
 
@@ -161,4 +161,23 @@ export async function updatePreferences(token: any, genres: any, artists: any){
     })
 
     return res.json()
+}
+
+export async function getTrack(track: string){
+    const url = `${API}/song/${track}?song=${track}`;
+    const data = await getJSON<any>(url);
+    console.log(data)
+    return data
+
+}
+
+export async function smartGetDataFromQuery(query: string){
+  for(let genre of GENRES) {
+    if(genre.name.toLowerCase() == query.toLowerCase()){
+        const genreResponse = await getTopTracksByGenre(query)
+        return genreResponse
+    }
+  }
+  const trackResponse = await getTrack(query)
+  return trackResponse
 }
