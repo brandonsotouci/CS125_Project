@@ -20,13 +20,16 @@ export default function LikedSongsPage() {
 
   const handleOnClick = (song: any) => {
     console.log(song)
-    setSongs((prev: any) => songs.filter((item: any) => item.artist !== song.artist && item.track !== song.track))
+    const newSongs =songs.filter((item: any) => item.artist !== song.artist && item.track !== song.track)
+    setSongs(newSongs)
   }
 
   useEffect(() => {
     const getSongs = async () => {
         const songs = await getLikedSongs(userToken as string)
-        setSongs(songs)
+        if(songs) {
+            setSongs(songs)
+        }
         setLoading(false)
     }
 

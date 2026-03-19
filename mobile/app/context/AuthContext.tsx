@@ -31,7 +31,7 @@ async function getToken(){
     if(Platform.OS === "web"){
         session = localStorage.getItem("session")
     } else {
-        session = SecureStore.getItemAsync("session")
+        session = await SecureStore.getItemAsync("session")
     }
 
     if(!session) return;
