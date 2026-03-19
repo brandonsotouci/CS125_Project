@@ -1,77 +1,79 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, SafeAreaView, Text, View } from "react-native";
-import TrackRow from "../../components/TrackRow";
-import { fetchChartTopTracks, Track } from "../services/lastfm";
+import { StyleSheet, Text, View } from "react-native";
+import { fetchChartRecommendedTracks, fetchChartTopTracks, getChartTopTracks, Track } from "../services/lastfm";
+import { useAuth } from "../context/AuthContext";
+
+import RecommendationComponent from "@/components/RecommendationComponent";
+import TrendingComponent from "@/components/TrendingComponent";
+import { ExpoSkeleton } from "@/components/ExpoSkeleton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LikedSongsHomeComponent from "@/components/LikedSongsComponent";
 
 const LIMIT = 20;
 
-export default function ChartsScreen() {
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-
-  async function loadFirst() {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchChartTopTracks({ page: 1, limit: LIMIT });
-      setTracks(res.tracks);
-      setPage(1);
-      setHasMore(res.tracks.length === LIMIT);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadMore() {
-    if (!hasMore || loadingMore || loading) return;
-    try {
-      setLoadingMore(true);
-      const next = page + 1;
-      const res = await fetchChartTopTracks({ page: next, limit: LIMIT });
-      setTracks((prev) => [...prev, ...res.tracks]);
-      setPage(next);
-      setHasMore(res.tracks.length === LIMIT);
-    } catch {
-      // silently ignore load-more errors
-    } finally {
-      setLoadingMore(false);
-    }
-  }
+export default function HomePage(){
+  const [recommendedTracks, setRecommendedTracks] = useState([])
+  const [trendingTracks, setTrendingTracks] = useState<Track[]>([])
+  const [loading, setIsLoading] = useState(true)
+  const { userToken } = useAuth()
 
   useEffect(() => {
-    loadFirst();
-  }, []);
-
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 22, fontWeight: "900" }}>Global Charts</Text>
-
-      {error ? <Text style={{ color: "crimson" }}>{error}</Text> : null}
-      {loading ? <ActivityIndicator /> : null}
-
-      <FlatList
-        data={tracks}
-        keyExtractor={(t, i) => `${t.artist}-${t.track}-${i}`}
-        renderItem={({ item }) => <TrackRow track={item} />}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.6}
-        refreshing={loading}
-        onRefresh={loadFirst}
-        ListFooterComponent={
-          loadingMore ? (
-            <View style={{ paddingVertical: 12 }}>
-              <ActivityIndicator />
-            </View>
-          ) : null
+    const fetchData = async () => {
+        const recommendationData = await fetchChartRecommendedTracks(userToken);
+        setRecommendedTracks(recommendationData)
+        let trendingTracksCache = await AsyncStorage.getItem("TRENDING_TRACKS")
+        if(!trendingTracksCache) {
+          const trendingData = await getChartTopTracks({ page: 1, limit: LIMIT })
+          setTrendingTracks(trendingData)
+          AsyncStorage.setItem("TRENDING_TRACKS", JSON.stringify(trendingData))
+        } else {
+          setTrendingTracks(JSON.parse(trendingTracksCache))
         }
-      />
-    </SafeAreaView>
-  );
+
+        setIsLoading(false)
+    }
+
+    fetchData()
+  }, [])
+
+
+  
+  return <View style = {styles.container}>
+      {!loading ? <View style = {styles.subcontainer}>
+          <RecommendationComponent tracks = {recommendedTracks} /> 
+          <TrendingComponent tracks = {trendingTracks} />
+          <LikedSongsHomeComponent />
+        </View> : 
+          <View style = {styles.loadingRows}>
+              {Array.from({ length: 10 }).map((_, i) => <ExpoSkeleton width={400} height = {100} /> )}
+          </View>
+       }
+  </View>
+  
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 12,
+    color: "white",
+    width: 400,
+    display: "flex",
+    flexDirection: "column",
+    margin: "auto",
+    marginTop: 0
+  },
+  subcontainer: {
+    gap: 24,
+    display: "flex",
+    flexDirection: "column",
+
+  },
+  text: {
+    color: "white"
+  },
+  loadingRows: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10
+  }
+})

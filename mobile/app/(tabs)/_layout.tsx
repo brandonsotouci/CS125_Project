@@ -2,19 +2,16 @@ import { Redirect, Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
+
 export default function TabLayout() {
   const { userToken, loading } = useAuth();
   const router = useRouter()
 
   const TAB_COLOR = "#2FEEF2"
   if(loading) return null;
-  
-  useEffect(() => {
-      if(!userToken){
-         router.replace("/login")
-      }
-  }, [])
-  
+  console.log(userToken)
+  if (!userToken) return <Redirect href="/login" />;
+
   return (
     <Tabs
       screenOptions={{
@@ -24,7 +21,12 @@ export default function TabLayout() {
           backgroundColor: "#1C1B34"
         },
         tabBarStyle: {
-          backgroundColor: "#1C1B34"
+          backgroundColor: "#1C1B34",
+          gap: 2
+        },
+        tabBarItemStyle: {
+          marginHorizontal: 1,
+          padding: 0,
         },
         sceneStyle: {
           backgroundColor: "#1C1B34"
@@ -33,25 +35,34 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={
         {tabBarIcon: ({ color, size}) => ( 
-            <Ionicons name = "home" size = {size} color = {TAB_COLOR} />
-        ), title: "Trending"}} 
+            <Ionicons name = "home" size = {20} color = {TAB_COLOR} />
+        ), title: "For You"}} 
       />
       <Tabs.Screen name="genres" options={
         {tabBarIcon: ({ color, size}) => ( 
-            <Ionicons name = "musical-notes" size = {size} color = {TAB_COLOR} />
-        ), title: "Genres"}}/>
+            <Ionicons name = "musical-notes" color = {TAB_COLOR} />
+        ), title: "Genres", href: null }}/>
       <Tabs.Screen name="artist" options={{ 
           tabBarIcon: ({color, size}) => (
-            <Ionicons name = "person" size = {size} color = {TAB_COLOR} />
-      ), title: "Artist"}} />
+            <Ionicons name = "person" size = {20} color = {TAB_COLOR} />
+      ), title: "Artist", href: null}} />
        <Tabs.Screen name="recommendations" options={{ 
           tabBarIcon: ({color, size}) => (
-            <Ionicons name = "person" size = {size} color = {TAB_COLOR} />
-      ), title: "Recs"}} />
+            <Ionicons name = "person" size = {20} color = {TAB_COLOR} />
+      ), title: "Recs",  href: null }} />
+      
+      <Tabs.Screen name="search" options={{ 
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name = "search" size = {20} color = {TAB_COLOR} />
+      ), title: "Search"}} />
       <Tabs.Screen name="settings" options={{ 
           tabBarIcon: ({color, size}) => (
-            <Ionicons name = "settings" size = {size} color = {TAB_COLOR} />
+            <Ionicons name = "settings" size = {20} color = {TAB_COLOR} />
       ), title: "Settings"}} />
+      <Tabs.Screen name="liked" options={{ 
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name = "heart" size = {20} color = {TAB_COLOR} />
+      ), title: "Liked"}} />
     </Tabs>
   );
 }

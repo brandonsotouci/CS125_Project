@@ -199,6 +199,51 @@ export async function getTrack(track: string){
 
 }
 
+export async function getLikedSongs(token: string){
+  const url = `${BASE}/api/postgres/liked-songs`
+  const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+  })
+
+  return res.json()
+}
+
+export async function setLikedSong(token: string, track: any){
+  console.log(track)
+    const url = `${BASE}/api/postgres/set-liked-song`
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        data: JSON.stringify(track)
+      })
+    })
+
+    return res.json()
+}
+
+export async function deleteLikedSong(token: string, track: any){
+    const url = `${BASE}/api/postgres/remove-liked-song`
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+         data: JSON.stringify(track)
+      })
+    })
+
+    return res.json()
+}
+
 export async function smartGetDataFromQuery(query: string, token: string){
   const albumResults = await getAlbums(query, token)
   /*title, artist */

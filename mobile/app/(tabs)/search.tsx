@@ -3,7 +3,7 @@ import MasterSearchBar from "@/components/MasterSearchBar";
 import SearchResults from "@/components/SearchResults";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { smartGetDataFromQuery } from "../services/lastfm";
+import { getLikedSongs, smartGetDataFromQuery } from "../services/lastfm";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,11 +25,14 @@ interface Track {
     artist: string,
     album: string,
     listeners?: string,
-    mbid?: string
-    type: "song"
+    mbid?: string,
+    type: "song",
+    liked: boolean
 }
 
 type Item = Album | Track
+
+const delay = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function MasterSearchScreen() {
     const [searchInput, setSearchInput] = useState<string>("")
@@ -37,16 +40,26 @@ export default function MasterSearchScreen() {
     const [items, setItems] = useState<Item[]>([]);
     const { userToken } = useAuth()
 
+    let controller;
+
     useEffect(() => {
+        if (controller) controller.abort();
+        controller = new AbortController();
+
         const fetchData = async () => {
             setLoading(true)
             const response = await smartGetDataFromQuery(searchInput, userToken as string)
             const albumData = response?.albums ? response.albums.map((album: any) => ({
                     ...album, type: "album" })) : []
 
-            const trackData = response?.tracks ? response.tracks.map((track: any) => ({
-                    ...track, type: "song"
-                })) : []
+            const likedSongs = await getLikedSongs(userToken as string)
+            console.log(likedSongs)
+            const trackData = response?.tracks ? response.tracks.map((track: any) => {
+                const liked = likedSongs.some((other: any) => other.artist === track.artist && other.track == track.track)
+                console.log(liked)
+                return {
+                    ...track, type: "song", liked: liked
+                }}) : []
            
             const formattedData = [
                 ...trackData, ...albumData
@@ -75,6 +88,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "column",
         margin: "auto",
-        marginTop: 0
+        marginTop: 0,
+        paddingTop: 12
     }
 })

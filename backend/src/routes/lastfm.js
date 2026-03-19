@@ -93,11 +93,13 @@ router.get("/song/:song", async (req, res) => {
 router.get("/track/:track", async (req, res) => {
   try {
     //console.log(req.query)
-    const title = req.params.track
+    const title = encodeURIComponent(req.params.track)
     const artist = req.query.artist
+    console.log(title, artist)
 
     //console.log(artist, title)
     const track = await getTrackInfo(artist, title);
+    console.log(track)
     const imageUri = await getRandomSongCover()
     res.json({
       track: track.name,
@@ -108,6 +110,7 @@ router.get("/track/:track", async (req, res) => {
       duration: track?.duration ?? null,
       imageUri: imageUri,
       summary: imageUri?.wiki?.summary ? stripHtml(info.wiki.summary) : "",
+      url: track?.url ?? null
     });
 
   } catch (err) {

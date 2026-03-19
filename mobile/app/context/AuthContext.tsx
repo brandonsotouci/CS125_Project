@@ -10,28 +10,47 @@ type AuthContextType = {
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const SESSION_DURATION = 60 * 60 * 1000;
+
 
 async function saveToken(token: string){
+    const session = {
+        user: token,
+        expiresAt: Date.now() + SESSION_DURATION,
+    };
+
     if(Platform.OS === "web") {
-        localStorage.setItem("token", token)
+        localStorage.setItem("session", JSON.stringify(session))
     } else {
-        await SecureStore.setItemAsync("token", token)
+        await SecureStore.setItemAsync("session", JSON.stringify(session))
     }
 }
 
 async function getToken(){
+    let session;
     if(Platform.OS === "web"){
-        return localStorage.getItem("token")
+        session = localStorage.getItem("session")
     } else {
-        return await SecureStore.getItemAsync("token")
+        session = SecureStore.getItemAsync("session")
     }
+
+    if(!session) return;
+
+    const sessionData = JSON.parse(session as string);
+    const isExpired = Date.now() > sessionData.expiresAt;
+    
+    if (isExpired) {
+        deleteToken()
+    }
+
+    return sessionData
 }
 
 async function deleteToken() {
     if(Platform.OS === "web"){
-        localStorage.removeItem("token")
+        localStorage.removeItem("session")
     } else {
-        await SecureStore.deleteItemAsync("token")
+        await SecureStore.deleteItemAsync("session")
     }
 }
 
@@ -44,13 +63,15 @@ export function AuthProvider({ children }: {
     useEffect(() => {
         const loadToken = async () => {
             const token = await getToken()
-            setUserToken(token)
+            if(token){
+                setUserToken(token.user)
+            }
             setLoading(false);
         }
 
         loadToken()
-    })
-
+    }, [])
+    
     const login = async (token: string) => {
         await saveToken(token)
         setUserToken(token)

@@ -20,6 +20,70 @@ router.get("/preferences", authenticateToken, async (req, res) => {
     })
 });
 
+router.get("/liked-songs", authenticateToken, async (req, res) => {
+    const userId = req.user.userId
+    const result = await pool.query(
+        "SELECT * FROM user_songs us JOIN songs s ON s.id = us.song_id WHERE us.user_id = $1", [userId]
+    )
+
+    const rows = result.rows
+
+    const data = rows.map((entry) => ({
+        artist: entry.artist,
+        track: entry.title
+    }))
+
+    res.json(data)
+})
+
+router.post("/set-liked-song", authenticateToken, async (req, res) => {
+    const userId = req.user.userId
+    const trackData = JSON.parse(req.body["data"])
+
+    console.log(trackData["track"])
+
+    try {
+        const result = await pool.query("SELECT * FROM user_songs us JOIN songs s ON s.id = us.song_id WHERE us.user_id = $1 AND s.title = $2", [userId, trackData.track])
+        if (result.rows.length == 0){
+            const song = await pool.query("SELECT * FROM songs WHERE title = $1", [trackData.track])
+            console.log(song)
+
+            let songId;
+            if (song.rows.length != 0){
+                songId = song.rows[0].id
+            } else {
+                const createdSong = await pool.query("INSERT INTO songs (title, artist, year, popularity, listeners) VALUES ($1, $2, $3, $4, $5) RETURNING id", [trackData.track, trackData.artist, 0, 0, 0]);
+                console.log(createdSong)
+                songId = createdSong.rows[0].id
+            }
+
+            await pool.query("INSERT INTO user_songs (user_id, song_id) VALUES ($1, $2)", [userId, songId])
+            res.json({ message: "Song bookmarked!"})
+        }
+
+    } catch (err) {
+        res.status(500).json({error: err.message})
+    }
+})
+
+router.post("/remove-liked-song", authenticateToken, async (req, res) => {
+    const userId = req.user.userId
+    const trackData = JSON.parse(req.body["data"])
+    console.log(trackData)
+    try {
+        const result = await pool.query("SELECT * FROM user_songs us JOIN songs s ON s.id = us.song_id WHERE us.user_id = $1 AND s.title = $2", [userId, trackData.track])
+        if(result.rows.length !== 0){
+            const songId = result.rows[0].song_id;
+            await pool.query("DELETE FROM user_songs us WHERE user_id = $1 AND song_id = $2", [userId, songId])
+            res.json({ message: "Removed song from preferences "})
+        }
+
+        res.json({ message: "Song not found"})
+    } catch (err){
+        res.status(500).json({ error: err.message})
+    }
+})
+
 router.get("/albums/:query", authenticateToken, async (req, res) => {
     const query = req.params.query
     console.log(query)

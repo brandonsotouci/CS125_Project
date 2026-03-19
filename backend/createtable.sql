@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS song_genres (
     PRIMARY KEY (song_id, genre_id)
 );
 
+CREATE TABLE IF NOT EXISTS user_songs (
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    song_id INT REFERENCES songs(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, song_id)
+);
+
 CREATE TABLE IF NOT EXISTS user_genres (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     genre_id INT REFERENCES genres(id) ON DELETE CASCADE,

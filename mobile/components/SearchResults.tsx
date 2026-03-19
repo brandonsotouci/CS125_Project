@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import { FlatList, ScrollView, ScrollViewBase, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Pressable, ScrollView, ScrollViewBase, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LikedSongButton from "./AddSongComponent";
 
 interface SearchResultsProps {
   searchQuery: string;
@@ -23,14 +24,17 @@ const AlbumTab = ({item, onItemPress} : any) => {
 }
 
 const TrackTab = ({item, onItemPress} : any) => {
-   return  <TouchableOpacity 
+   return  <Pressable 
               style={styles.resultItem}
               onPress={() => 
                   router.push({ pathname: "/track/[track]", params: { artist: item.artist, track: item.track } as any })
               }>
-                <Text style={styles.resultText}>{item.track || 'Untitled'}</Text>
-                {item.artist && (<Text style={styles.resultSubtitle}>Song - {item.artist}</Text>)}
-          </TouchableOpacity> 
+                
+                  <Text style={styles.resultText}>{item.track || 'Untitled'}</Text>
+                  {item.artist && (<Text style={styles.resultSubtitle}>Song - {item.artist}</Text>)}
+                  <View style={{ position: "absolute", top: 8, right: 8, zIndex: 2 }} onStartShouldSetResponder={() => true} ><LikedSongButton song = {item} initialLiked={item.liked}/></View>
+          </Pressable> 
+
 }
 
 const SearchResults = ({ 
@@ -102,6 +106,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    position: "relative"
   },
   resultText: {
     fontSize: 16,

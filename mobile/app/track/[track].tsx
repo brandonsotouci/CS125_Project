@@ -16,11 +16,19 @@ export interface TrackMetadata {
   imageUri?: string
 }
 
+
+
 export default function SingleTrackPage() {
   const { track, artist } = useLocalSearchParams()
   const [data, setData] = useState<TrackMetadata | null>(null);
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null);
+
+  /*const getYoutubeModal = async () => {
+    const ytRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(`${artist} ${track} official audio`)}&type=video&maxResults=1&key=${process.env.EXPO_PUBLIC_YOUTUBE_API_KEY}`
+    );
+  }*/
 
   useEffect(() => {
     const loadTrack = async () => {
