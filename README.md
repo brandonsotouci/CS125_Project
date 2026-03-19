@@ -8,11 +8,13 @@ This project is a **Full Stack Music Discovery Platform App** consisting of:
 * **Backend API** (Node.js + Express)
 * **External Music Data** (Last.fm API + Public APIs)
 
-The goal is to support **music trend discovery**, allowing users to explore:
+The goal is to support **music trend discovery**, allowing users to:
 
-* Top tracks by artist
+* Get top tracks by artist
 * Music by genre (tags)
 * Trending/global charts
+* Get recommended tracks based on their preferred artists and genres (recommendations)
+* Store their favorite songs (personalization)
 
 The architecture is modular and designed to scale to additional providers (Spotify, Apple Music) in the future.
 
@@ -181,8 +183,5 @@ Note that the backend server and frontend server must be running at the same tim
 You will signup for an account at **/signup**. Enter email and password that are easy to remember. Password is encrypted so no one knows except you knows the password.
 
 
-## Next Steps
-- Integrate search of songs and possibly add filter recommendations on the same page if it does not clutter the user interface
-- Integrate recommendation system so the user can get recommended tracks
-- Create Single Page + Component for Individual Tracks + Albums
+
 

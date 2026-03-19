@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo, getRecommendedTracks } from "../services/lastfm.service.js"
+import { getArtistTopTracks, getTracksByGenre, getTopGlobalTracks, getTrackInfo, getRecommendedTracks, getTrackByTitleOnly } from "../services/lastfm.service.js"
 import { getRandomSongCover } from "../services/images.service.js";
 import { authenticateToken } from "../../middleware/auth.js";
 
@@ -59,14 +59,47 @@ router.get("/artist/:artist/tracks", async (req, res) => {
     }
 })
 
+router.get("/song/:song", async (req, res) => {
+    try {
+        const song = req.params.song
+        const tracks = await getTrackByTitleOnly(song)
+        if (tracks != null){
+            const parsedTracks = tracks.map((track) => {
+                const metadata = getTrackInfo(track.artist, track.name)
+                return ({
+                    track: track?.name,
+                    artist: track?.artist,
+                    album: metadata.album?.title || "",
+                    listeners: track?.listeners,
+                    mbid: track?.mbid
+
+                })})
+
+            //console.log(parsedTracks)
+            res.json(parsedTracks)
+
+        } else {
+            res.json({})
+        }
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ 
+            error: err.messsage
+        })
+    }
+})
+
 router.get("/track/:track", async (req, res) => {
   try {
     //console.log(req.query)
-    const title = req.params.track
+    const title = encodeURIComponent(req.params.track)
     const artist = req.query.artist
+    console.log(title, artist)
 
     //console.log(artist, title)
     const track = await getTrackInfo(artist, title);
+    console.log(track)
     const imageUri = await getRandomSongCover()
     res.json({
       track: track.name,
@@ -74,8 +107,10 @@ router.get("/track/:track", async (req, res) => {
       album: track.album?.title || "",
       listeners: track?.listeners ?? null,
       playcount: track?.playcount ?? null,
+      duration: track?.duration ?? null,
       imageUri: imageUri,
       summary: imageUri?.wiki?.summary ? stripHtml(info.wiki.summary) : "",
+      url: track?.url ?? null
     });
 
   } catch (err) {

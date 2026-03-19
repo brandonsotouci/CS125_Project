@@ -3,17 +3,38 @@ import { useEffect, useState } from "react";
 import { Image, ScrollView, Text, View } from "react-native";
 import { fetchTrack } from "../services/lastfm";
 import { useSearchParams } from "expo-router/build/hooks";
+import MusicPlayer from "@/components/MusicPlayerComponent";
 
-export default function TrackDetails() {
+export interface TrackMetadata {
+  track: string,
+  album: string,
+  artist: any,
+  listeners?: string,
+  playcount?: string,
+  summary?: string,
+  duration?: string,
+  imageUri?: string
+}
+
+
+
+export default function SingleTrackPage() {
   const { track, artist } = useLocalSearchParams()
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<TrackMetadata | null>(null);
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null);
+
+  /*const getYoutubeModal = async () => {
+    const ytRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(`${artist} ${track} official audio`)}&type=video&maxResults=1&key=${process.env.EXPO_PUBLIC_YOUTUBE_API_KEY}`
+    );
+  }*/
 
   useEffect(() => {
     const loadTrack = async () => {
       try {
         const data = await fetchTrack(track, artist)
+        console.log(data)
         setData(data);
         setLoading(false);
       } catch (e: any) {
@@ -29,22 +50,8 @@ export default function TrackDetails() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-      <Image
-        source={{ uri: data.imageUri || "https://picsum.photos/600" }}
-        style={{ width: "100%", height: 280, borderRadius: 18 }}
-      />
-      <Text style={{ fontSize: 24, fontWeight: "800" }}>{data.track}</Text>
-      <Text style={{ fontSize: 16 }}>{data.artist.name}</Text>
-
-      {data.album ? <Text>Album: {data.album}</Text> : null}
-
-      <View style={{ flexDirection: "row", gap: 16 }}>
-        {data.listeners != null ? <Text>Listeners: {String(data.listeners)}</Text> : null}
-        {data.playcount != null ? <Text>Plays: {String(data.playcount)}</Text> : null}
-      </View>
-
-      {data.summary ? <Text style={{ lineHeight: 20 }}>{data.summary}</Text> : null}
-    </ScrollView>
+    <View>
+      <MusicPlayer data = {data} />
+    </View>
   );
 }

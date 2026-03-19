@@ -76,22 +76,17 @@ export default function SettingsPage(){
         <ScrollView contentContainerStyle = {styles.container}>
         {message && <Text style={styles.messageText}>{message}</Text>}
         <Text style = {styles.title}>Select Favorite Genres</Text>
-             <FlatList 
-                    data = {GENRES}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => {
-                        const selected = selectedGenres.includes(item)
-                        return <Pressable onPress = {() => toggleGenre(item)}
-                                style = {[
-                                    styles.genreItem,
-                                    selected && styles.selected
-                                ]}>
-                            <Text style={styles.genreText}>{item}</Text>
-                        </Pressable>
-                    }}
-            />
-
-
+             {GENRES.map((item) => {
+                    const selected = selectedGenres.includes(item)
+                    return <Pressable onPress = {() => toggleGenre(item)}
+                            style = {[
+                                styles.genreItem,
+                                selected && styles.selected
+                            ]}>
+                        <Text style={styles.genreText}>{item}</Text>
+                    </Pressable>
+                    })
+                }
         <Text style = {styles.artistTitle}>Select Favorite Artists</Text>
         <View style = {styles.inputContainer}>
             <TextInput placeholder="Add artist..."
@@ -103,18 +98,14 @@ export default function SettingsPage(){
                 <Text style={styles.addButtonText}>Add</Text>
             </Pressable>
         </View>
-        <FlatList 
-            data={artists}
-            keyExtractor={(item) =>item}
-            renderItem={({item}) => (
+        {artists.map((item: any) => (  
                 <View style={styles.artistItem}>
                     <Text style={styles.artistText}>{item}</Text>
                     <Pressable style = {styles.removeArtistItem} onPress = {() => removeArtist(item)}>
                         <Text>X</Text>
                     </Pressable>
                 </View>
-            )} 
-        />
+        ))}
         <Pressable onPress={handlePreferences} style={styles.updateButton}>
             <Text style={styles.updateText}>
                 Update Preferences 
@@ -137,11 +128,13 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 18,
-        marginVertical: 12
+        marginVertical: 12,
+        color: "white"
     },
     artistTitle: {
         fontSize: 18,
-        marginVertical: 24
+        marginVertical: 24,
+        color: "white"
     },
     genreItem: {
         padding: 12,
@@ -154,16 +147,15 @@ const styles = StyleSheet.create({
         color: "black"
     },
     selected: {
-        backgroundColor: "#f54263"
+        backgroundColor: "#00bcd4"
     },
     updateButton: {
-        marginTop: 20,
+        marginVertical: 20,
         backgroundColor: "#000",
         width: 250,
         padding: 12,
         borderRadius: 8,
         alignItems: "center"
-
     },
     updateText: {
         color: "white",
@@ -198,7 +190,7 @@ const styles = StyleSheet.create({
     },
     artistItem: {
         padding: 12,
-        backgroundColor: "#f54263",
+        backgroundColor: "#00bcd4",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
