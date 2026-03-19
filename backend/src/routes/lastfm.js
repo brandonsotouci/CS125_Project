@@ -90,17 +90,35 @@ router.get("/song/:song", async (req, res) => {
     }
 })
 
+function cleanHtml(raw) {
+  return raw
+    .replace(/<[^>]*>/g, '')
+    .replace(/\n\s*\n/g, '\n\n')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function removeTaggedContent(raw) {
+  return raw
+    .replace(/<[^>]+>.*?<\/[^>]+>/gis, '')
+    .replace(/<[^>]+\/?>/g, '')
+    .replace(/\n\s*\n/g, '\n\n')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 router.get("/track/:track", async (req, res) => {
   try {
     //console.log(req.query)
     const title = encodeURIComponent(req.params.track)
     const artist = req.query.artist
-    console.log(title, artist)
+    //console.log(title, artist)
 
     //console.log(artist, title)
     const track = await getTrackInfo(artist, title);
     console.log(track)
     const imageUri = await getRandomSongCover()
+
     res.json({
       track: track.name,
       artist: track.artist || artist,
@@ -109,7 +127,8 @@ router.get("/track/:track", async (req, res) => {
       playcount: track?.playcount ?? null,
       duration: track?.duration ?? null,
       imageUri: imageUri,
-      summary: imageUri?.wiki?.summary ? stripHtml(info.wiki.summary) : "",
+      published: track.wiki?.published ?? null,
+      summary: track.wiki?.summary ? removeTaggedContent(track.wiki.summary) : "",
       url: track?.url ?? null
     });
 
